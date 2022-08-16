@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 //#include <opencv2/imgproc/imgproc.hpp>
@@ -21,15 +22,17 @@ cv::VideoCapture g_cap;
 void simpleTransform();
 void otherTransform();
 void showImage();
+void showAVideo();
 void showVideo();
 bool writeRealToAVI();
 
 int main(int argc, const char * argv[]) {
 //    showImage();
+//    showAVideo();
 //    showVideo();
 //    simpleTransform();
-    otherTransform();
-//    writeRealToAVI();
+//    otherTransform();
+    writeRealToAVI();
     return 0;
 }
 
@@ -42,8 +45,32 @@ void onTrackbarSlide(int pos, void *) {
     g_dontset = 0;
 }
 
+void showAVideo() {
+    std::string path = "/Users/zsg/Downloads/thirdvideos/江青赵丹.mp4";
+    std::string windowName = "Example2_4";
+    cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
+    cv::VideoCapture cap;
+    cap.open(path);
+    
+    cv::Mat frame;
+    for(;;) {
+            cap >> frame;
+            if (frame.empty()) {
+                break;
+            }
+            
+            cv::imshow(windowName, frame);
+        char c = (char)cv::waitKey(10);
+        if (c >= 0)
+            break;
+    }
+
+    cv::destroyWindow(windowName);
+}
+
+
 void showVideo() {
-    std::string path = "/Users/zsg/Downloads/江青赵丹.mp4";
+    std::string path = "/Users/zsg/Downloads/thirdvideos/江青赵丹.mp4";
     std::string windowName = "Example2_4";
     cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
     g_cap.open(path);
@@ -67,9 +94,9 @@ void showVideo() {
             int current_pos = (int)g_cap.get(cv::CAP_PROP_POS_FRAMES);
             g_dontset = 1;
             
-            if(abs(current_pos - last_changed_pos) >= 20) {
+            if(abs(current_pos - last_changed_pos) >= 5) {
                 last_changed_pos = current_pos;
-//                cv::setTrackbarPos("Position", windowName, current_pos); 影响性能
+                cv::setTrackbarPos("Position", windowName, current_pos); //影响性能
             }
             cv::imshow(windowName, frame);
             
@@ -91,16 +118,16 @@ void showVideo() {
 
 
 void showImage() {
-    std::string path = "/Users/zsg/Desktop/pengzuo.jpg";
+    std::string path = "/Users/zsg/Desktop/刘涛.jpeg";
     cv::Mat image = cv::imread(path);
-    cv::namedWindow("origin", cv::WINDOW_AUTOSIZE);
+    cv::namedWindow("origin", cv::WINDOW_GUI_EXPANDED);
     cv::imshow("origin", image);
-    cv::waitKey(4000);
+    cv::waitKey(0);
     cv::destroyWindow("origin");
 }
 
 void simpleTransform() {
-    std::string path = "/Users/zsg/Desktop/pengzuo.jpg";
+    std::string path = "/Users/zsg/Desktop/刘涛.jpeg";
     std::string winName1 = "Example2_5_in";
     std::string winName2 = "Example2_5_out";
     cv::namedWindow(winName1, cv::WINDOW_AUTOSIZE);
@@ -130,7 +157,7 @@ void simpleTransform() {
 
 void otherTransform() {
     cv::Mat img_rgb, img_gry, img_cny, img_pyr, img_pyr2;
-    std::string path = "/Users/zsg/Desktop/pengzuo.jpeg";
+    std::string path = "/Users/zsg/Desktop/刘涛.jpeg";
     
     std::string winName0 = "Example origin";
     std::string winName1 = "Example Gray";
@@ -146,7 +173,7 @@ void otherTransform() {
     
     cv::imshow(winName0, img_rgb);
 
-    cv::cvtColor(img_rgb, img_gry, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(img_rgb, img_gry, cv::COLOR_RGB2GRAY);
     cv::imshow(winName1, img_gry);
     
     cv::pyrDown(img_gry, img_pyr);
@@ -183,7 +210,7 @@ void otherTransform() {
 
 bool writeRealToAVI() {
     cv::Mat img_rgb;
-    std::string path = "/Users/zsg/Desktop/camera1.avi";
+    std::string path = "/Users/zsg/Desktop/camera2.avi";
 //    std::string path = "camera1.avi";
 
     std::string winName1 = "Example2 11";
@@ -191,7 +218,7 @@ bool writeRealToAVI() {
     cv::namedWindow(winName1, cv::WINDOW_AUTOSIZE);
     cv::namedWindow(winName2, cv::WINDOW_AUTOSIZE);
     cv::VideoCapture cap;
-    
+
     cap.open(0);
     if (!cap.isOpened()) {
         std::cerr << "Couldn't open capture. " << std::endl;
@@ -200,9 +227,10 @@ bool writeRealToAVI() {
     
     double fps = cap.get( cv::CAP_PROP_FPS) ;
     cv::Size size((int)cap.get( cv::CAP_PROP_FRAME_WIDTH ), (int)cap.get( cv::CAP_PROP_FRAME_HEIGHT ) );
-    
+
+    std::filesystem::remove(path);
     cv::VideoWriter writer;
-    writer.open(path, cv::CAP_OPENCV_MJPEG, fps, size);
+    writer.open(path, cv::VideoWriter::fourcc('M','J','P','G'), fps, size);
     if (!writer.isOpened()) {
         std::cerr << "Couldn't open file. " << std::endl;
         return false;
@@ -216,16 +244,16 @@ bool writeRealToAVI() {
         
         cv::imshow(winName1, bgr_frame);
         
-        cv::logPolar(bgr_frame, logpolar_frame, cv::Point2f(bgr_frame.cols/2, bgr_frame.rows/2),
-                     40, cv::WARP_FILL_OUTLIERS);
-        cv::imshow(winName2, logpolar_frame);
-        writer << logpolar_frame;
+//        cv::logPolar(bgr_frame, logpolar_frame, cv::Point2f(bgr_frame.cols/2, bgr_frame.rows/2),
+//                     40, cv::WARP_FILL_OUTLIERS);
+//        cv::imshow(winName2, logpolar_frame);
+//        writer << logpolar_frame;
         
         
-//        writer << bgr_frame;
+        writer << bgr_frame;
         
         
-        char c = (char)cv::waitKey(1000);
+        char c = (char)cv::waitKey(33);
         if(c == 27) {
             break;
         }

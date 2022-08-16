@@ -52,6 +52,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4308FBC028ABBE8B00A4B3C7 /* chapter02.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = chapter02.entitlements; sourceTree = "<group>"; };
 		43706F8328AA263000BDC21A /* chapter02 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = chapter02; sourceTree = BUILT_PRODUCTS_DIR; };
 		43706F8628AA263000BDC21A /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -87,6 +88,7 @@
 		43706F8528AA263000BDC21A /* chapter02 */ = {
 			isa = PBXGroup;
 			children = (
+				4308FBC028ABBE8B00A4B3C7 /* chapter02.entitlements */,
 				43706F8628AA263000BDC21A /* main.cpp */,
 			);
 			path = chapter02;
@@ -280,6 +282,7 @@
 		43706F8B28AA263000BDC21A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = chapter02/chapter02.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C8N539AAFW;
@@ -311,6 +314,7 @@
 		43706F8C28AA263000BDC21A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = chapter02/chapter02.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C8N539AAFW;
