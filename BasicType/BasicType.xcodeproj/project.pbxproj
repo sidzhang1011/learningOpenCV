@@ -26,6 +26,8 @@
 		4308FBCA28ADA86700A4B3C7 /* BasicType */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = BasicType; sourceTree = BUILT_PRODUCTS_DIR; };
 		4308FBCD28ADA86700A4B3C7 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		4308FBD428ADB09B00A4B3C7 /* BasicType.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BasicType.entitlements; sourceTree = "<group>"; };
+		4308FBD528AF2A1900A4B3C7 /* TypeConversion.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TypeConversion.hpp; sourceTree = "<group>"; };
+		4308FBD628AF946100A4B3C7 /* SmartPointers.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SmartPointers.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +62,8 @@
 			children = (
 				4308FBD428ADB09B00A4B3C7 /* BasicType.entitlements */,
 				4308FBCD28ADA86700A4B3C7 /* main.cpp */,
+				4308FBD528AF2A1900A4B3C7 /* TypeConversion.hpp */,
+				4308FBD628AF946100A4B3C7 /* SmartPointers.hpp */,
 			);
 			path = BasicType;
 			sourceTree = "<group>";
