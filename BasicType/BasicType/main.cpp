@@ -7,8 +7,10 @@
 
 #include <iostream>
 #include <opencv2/core/core.hpp>
+
 #include "TypeConversion.hpp"
 #include "SmartPointers.hpp"
+#include "TypeTraits.hpp"
 
 using namespace std;
 
@@ -16,6 +18,8 @@ void testcpp();
 template <typename T>
 void printElements (const T& coll);
 void utility();
+void exercise();
+
 
 int main(int argc, const char * argv[]) {
     testcpp();
@@ -63,6 +67,8 @@ int main(int argc, const char * argv[]) {
     std::cout << dr.fmt << ' ' << dr.channels << std::endl;
     utility();
     
+    exercise();
+    
     return 0;
 }
 
@@ -95,8 +101,12 @@ void testcpp() {
     sp.testWeak();
     sp.testUnique();
     
-    
-    
+    TypeTraits *tp = new TypeTraits();
+    tp->printType(tp);
+    tp->printType(*tp);
+    std::cout << std::is_pointer<int>();
+    auto mv = tp->min(float(10.2), 10);
+    std::cout<< mv << endl;
     std::cout << std::endl;
 //    int t{3.3};
 }
@@ -120,4 +130,35 @@ void utility() {
     
     tuple<int,float,string> t1(41,6.3,"nico");
     cout<< get<0>(t1) << " " << get<1>(t1) << " " << get<2>(t1) << endl;
+}
+
+void exercise() {
+    // exercise 1
+    float f = -10.5;
+    float af = cv::abs(f);
+    int i1 = cvRound(af);
+    int f2 = cvFloor(af);
+    int i3 = cvCeil(af);
+    cv::Vec<float, 10> fn;
+    cv::randu(fn, -1, 1.0);
+    for (int i=0; i<10; i++) {
+        std::cout << fn[i] << " ";
+    }
+    
+    cv::Point2f fp1{1.0, 2.0};
+    cv::Point ip1{fp1};
+    
+    // exercise 2
+    cv::Matx33f mf1{1,2,3,4,5,6,7,8,9};
+    cv::Vec3f vf1{3,2,1};
+    cv::Vec3f mv1 = mf1 * vf1;
+    
+    // exercise 3
+    cv::Matx<float, 3, 3> mf2 = {1,2,3,4,5,6,7,8,9};
+    cv::Vec<float, 3> vf2 = {3,2,1};
+    cv::Vec<float, 3> mv2 = mf2 * vf2;
+    
+    cv::Matx<float, 3, 1> mf3 = vf2;
+    
+    std::cout<<endl;
 }
