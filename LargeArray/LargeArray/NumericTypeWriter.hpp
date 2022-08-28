@@ -31,15 +31,15 @@ private:
     
 private:
     bool createTypeWriter();
-    void showNumber(int number, int grayIntensity);
     void displayDigit(int startPixelX, int startPixelY, int number);
     bool handleNumber(int num);
     void handleBackspace();
     void handleEnter();
-    std::shared_ptr<cv::Mat> getPixels(int num);
-    int calculatePosForCursorInText();
+    int contentPosFromCursorPos();
+    cv::Point2i cursorPosFromContentPos(int textPos);
     void displayRemainingContents(int startPos);
     bool addAndDisplayContents(int num);
+    bool isEnter(int number);
     
     
 };

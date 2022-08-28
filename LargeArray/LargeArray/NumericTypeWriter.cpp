@@ -92,12 +92,25 @@ bool NumericTypeWriter::showTypeWriter() {
             case 0x02:
                 if (cursorPos.y > 0) {
                     --cursorPos.y;
+                } else if(cursorPos.x > 0) {
+//                    --cursorPos.x;
+                    int pos = contentPosFromCursorPos();
+                    
                 }
                 break;
                 // right
             case 0x03:
-                if (cursorPos.y < maxCursorPos.y+1) {
-                    ++cursorPos.y;
+                if(cursorPos.x < lastCursorPos.x ) {
+                    if(cursorPos.y < maxCursorPos.y) {
+                        ++cursorPos.y;
+                    } else {
+                        cursorPos.x = 0;
+                        cursorPos.y = 0;
+                    }
+                } else {
+                    if (cursorPos.y < lastCursorPos.y) {
+                        ++cursorPos.y;
+                    }
                 }
                 break;
             default:
@@ -116,7 +129,7 @@ void NumericTypeWriter::handleBackspace() {
     // line start, return
     if (cursorPos.x == 0 && cursorPos.y == 0) return;
     if (allTyped.size() == 0) return;
-    int pos = calculatePosForCursorInText();
+    int pos = contentPosFromCursorPos();
     if (pos < 1) return;
     allTyped.erase(allTyped.begin() + pos - 1);
     if (cursorPos.y > 0) {
@@ -124,30 +137,40 @@ void NumericTypeWriter::handleBackspace() {
     } else {
         --cursorPos.x;
         cursorPos.y = maxCursorPos.y;
-                
-        do {
-            int pos = calculatePosForCursorInText();
-            int value = allTyped[pos];
-            if (value != '\r' && value != 10)
-                break;
-            --cursorPos.y;
-            if (0 == cursorPos.y) {
-                break;
+        int deletedNum = allTyped[pos - 1];
+        if (pos == 1) {
+            cursorPos.y = 0;
+        } else {
+            if (isEnter(deletedNum) ) {
+                if (isEnter(allTyped[pos - 2])) {
+                    cursorPos.y = 0;
+                } else {
+                    cv::Point2i prevScreenPos = cursorPosFromContentPos(pos - 2);
+                    cursorPos.y = prevScreenPos.y + 1;
+                }
             }
-        } while(1);
+        }
     }
     
     cv::Point2i tempLast = lastCursorPos;
     if(tempLast.y > 0) {
         --tempLast.y;
+    } else if (tempLast.x > 0){
+        --tempLast.x;
+        tempLast.y = maxCursorPos.y;
     }
     int clearPixelX = tempLast.x * numericSize.height;
-    for (int y = tempLast.y; y < maxCursorPos.y; ++y) {
+    for (int y = tempLast.y; y <= maxCursorPos.y; ++y) {
         displayDigit(clearPixelX, y * numericSize.width, 100);
     }
     
     displayRemainingContents(pos - 1);
 }
+
+bool NumericTypeWriter::isEnter(int number) {
+    return (number == 10 || number == '\r');
+}
+
 
 void NumericTypeWriter::handleEnter() {
     if (cursorPos.x > maxCursorPos.x)
@@ -186,10 +209,12 @@ cv::Vec3b getColor(int num) {
 }
 
 bool NumericTypeWriter::handleNumber(int num) {
+    if (num < 0 || num > 9) return false;
     if (cursorPos.x > maxCursorPos.x)
         return false;
-    if (num < 0 || num > 9) return false;
-    
+    if (cursorPos.x == maxCursorPos.x && cursorPos.y > maxCursorPos.y)
+        return false;
+
     bool result = addAndDisplayContents(num);
     if (!result) return false;
 
@@ -198,6 +223,7 @@ bool NumericTypeWriter::handleNumber(int num) {
         cursorPos.y = 0;
         ++ cursorPos.x;
     }
+
     return true;
 }
 
@@ -211,7 +237,7 @@ void NumericTypeWriter::displayRemainingContents(int startPos) {
             ++lastCursorPos.x;
         } else {
             displayDigit(startPixelX, startPixelY, currentNum);
-            if (lastCursorPos.y < maxCursorPos.y) {
+            if (lastCursorPos.y <= maxCursorPos.y) {
                 ++lastCursorPos.y;
                 startPixelY += numericSize.width;
             } else {
@@ -225,7 +251,7 @@ void NumericTypeWriter::displayRemainingContents(int startPos) {
 }
 
 bool NumericTypeWriter::addAndDisplayContents(int num) {
-    int pos = calculatePosForCursorInText();
+    int pos = contentPosFromCursorPos();
     if (pos == -1) return false;
     if (pos == allTyped.size()) {
         allTyped.push_back(num);
@@ -237,7 +263,9 @@ bool NumericTypeWriter::addAndDisplayContents(int num) {
     return true;
 }
 
-int NumericTypeWriter::calculatePosForCursorInText() {
+// get text position from cursorPos
+int NumericTypeWriter::contentPosFromCursorPos() {
+    if (allTyped.size() == 0 && !(cursorPos.x == 0 && cursorPos.y == 0)) return -1;
     int x = cursorPos.x;
     if (x >= maxCursorPos.x + 1) {
         return -1;
@@ -249,14 +277,15 @@ int NumericTypeWriter::calculatePosForCursorInText() {
     int y = cursorPos.y;
     if (y < 0) {
         y = 0;
-    } else if (y > maxCursorPos.y) {
-        y = maxCursorPos.y;
     }
         
     int pos = 0;
     int calcX = 0;
     int calcY = 0;
     for (pos = 0; pos < allTyped.size(); pos++) {
+        if ((calcX > x) || (calcX == x && calcY >= y)) {
+            break;
+        }
         if (allTyped[pos] == '\n' || allTyped[pos] == 10) {
             ++calcX;
             calcY = 0;
@@ -268,12 +297,40 @@ int NumericTypeWriter::calculatePosForCursorInText() {
                 calcY = 0;
             }
         }
-        if ((calcX > x) || (calcX == x && calcY > y)) {
-            break;
-        }
     }
     return pos;
 }
+
+cv::Point2i NumericTypeWriter::cursorPosFromContentPos(int textPos) {
+    if (textPos < 0 ) return cv::Point2i(0, 0);
+    if (textPos > allTyped.size() - 1) {
+        return cv::Point2i(maxCursorPos.x + 1, maxCursorPos.y);
+    }
+    
+    cv::Point2i screenPos(-1, -1);
+    for(int i=0; i<allTyped.size(); i++) {
+        if (isEnter(allTyped[i]) ) {
+            ++screenPos.x;
+            screenPos.y = -1;
+        } else {
+            if(screenPos.y < maxCursorPos.y) {
+                if (screenPos.x < 0) {
+                    screenPos.x = 0;
+                }
+                ++screenPos.y;
+            } else {
+                ++screenPos.x;
+                screenPos.y = 0;
+            }
+        }
+    }
+
+    if (screenPos.y < 0) {
+        screenPos.y = 0;
+    }
+    return screenPos;
+}
+
 
 void NumericTypeWriter::displayDigit(int startPixelX, int startPixelY, int num) {
     for (int y = startPixelY; y < startPixelY + numericSize.width; y++) {
@@ -401,10 +458,3 @@ void NumericTypeWriter::displayDigit(int startPixelX, int startPixelY, int num) 
  
 }
 
-std::shared_ptr<cv::Mat> NumericTypeWriter::getPixels(int num) {
-    if (digitNumPixels == nullptr) {
-        digitNumPixels = std::shared_ptr<std::vector<std::shared_ptr<cv::Mat>>>(new std::vector<std::shared_ptr<cv::Mat>>());
-        
-    }
-    return (*digitNumPixels)[num];
-}
