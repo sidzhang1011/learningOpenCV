@@ -51,6 +51,16 @@ void showAVideo() {
     cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
     cv::VideoCapture cap;
     cap.open(path);
+    double fps = cap.get(cv::CAP_PROP_FPS);
+    double interval = 1000/fps;
+    unsigned f = (unsigned)cap.get( cv::CAP_PROP_FOURCC );
+    char fourcc[] = {
+                      (char) f,        // First character is lowest bits
+                      (char)(f >> 8),  // Next character is bits 8-15
+                      (char)(f >> 16), // Next character is bits 16-23
+                      (char)(f >> 24), // Last character is bits 24-31
+                      '\0'             // and don't forget to terminate
+    };
     
     cv::Mat frame;
     for(;;) {
@@ -60,7 +70,7 @@ void showAVideo() {
             }
             
             cv::imshow(windowName, frame);
-        char c = (char)cv::waitKey(10);
+        char c = (char)cv::waitKey(interval - 1);
         if (c >= 0)
             break;
     }
