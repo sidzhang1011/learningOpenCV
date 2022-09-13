@@ -1,0 +1,1 @@
+-L/Users/zsg/local/lib -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_photo -lopencv_video -lopencv_videoio
