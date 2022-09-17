@@ -9,6 +9,8 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+#include "ConnectedComponent.hpp"
+
 using namespace std;
 string exerWindow = "exerWindow";
 
@@ -178,7 +180,7 @@ void exer5() {
     cv::addWeighted(planes[2], 1./3., t, 1.0, 0, diff12);
     
     cv::Mat threshold12;
-    cv::threshold(diff12, threshold12, 50, 250, cv::THRESH_BINARY);
+    cv::threshold(diff12, threshold12, 50, 255, cv::THRESH_BINARY);
     
     cv::morphologyEx(threshold12, threshold12, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3,3)));
     
@@ -187,17 +189,83 @@ void exer5() {
     cv::subtract(threshold12, eroded, threshold12);
     threshold12 = cv::abs(threshold12);
 
-    
-
     imshow(exerWindow, threshold12);
+    
+}
 
+void exer6() {
+    string fileName = "/Users/zsg/Desktop/cup1.jpeg";
+    cv::Mat img = cv::imread(fileName);
+    cv::Mat smoothedImg;
+    cv::adaptiveThreshold(img, smoothedImg, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_TRUNC, 5, 0);
+    cv::Mat resultImg;
+    smoothedImg.copyTo(resultImg);
+    // 192~255--->192~225
+    // 0-63 ---> 32~63
+    
+    imshow(exerWindow, smoothedImg);
+}
+
+void exer7() {
+    string fileName = "/Users/zsg/Desktop/cup1.jpeg";
+    cv::Mat img = cv::imread(fileName);
+
+    vector<cv::Mat> planes;
+    cv::split(img, planes);
+    cv::Mat tempImg;
+    cv::GaussianBlur(planes[0], tempImg, cv::Size(5,5), 1.25);
+    tempImg.copyTo(planes[0]);
+    cv::Mat resultImg;
+    cv::merge(planes, resultImg);
+    cv::imshow(exerWindow, resultImg);
+}
+
+void exer8() {
+    string fileName1 = "/Users/zsg/Desktop/cup1.jpeg";
+    cv::Mat img1 = cv::imread(fileName1);
+    string fileName2 = "/Users/zsg/Desktop/cup2.jpeg";
+    cv::Mat img2 = cv::imread(fileName2);
+
+    cv::Mat diffs;
+    cv::subtract(img1, img2, diffs);
+    diffs = cv::abs(diffs);
+    vector<cv::Mat> planes;
+    cv::split(diffs, planes);
+    
+    cv::Mat diff12, t;
+    cv::addWeighted(planes[0], 1./3., planes[1], 1./3., 0, t);
+    cv::addWeighted(planes[2], 1./3., t, 1.0, 0, diff12);
+    
+    cv::Mat threshold12;
+    cv::threshold(diff12, threshold12, 30, 255, cv::THRESH_BINARY);
+    
+    cv::morphologyEx(threshold12, threshold12, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3,3)));
+//    cv::morphologyEx(threshold12, threshold12, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(33,33)));
+//    cv::dilate(threshold12, threshold12, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3,3)));
+
+    cv::Mat eroded;
+    cv::erode(threshold12, eroded, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3,3)));
+    cv::subtract(threshold12, eroded, threshold12);
+    threshold12 = cv::abs(threshold12);
+//    cv::morphologyEx(threshold12, threshold12, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(33,33)));
+
+    shared_ptr<ConnectedComponent> pt(new ConnectedComponent(threshold12));
+    cv::Mat largestConnectCompo = pt->getLargestComponentImage();
+//
+
+//    imshow(exerWindow, threshold12);
+    imshow(exerWindow, largestConnectCompo);
 }
 
 void exer() {
 //    exer1();
 //    exer2();
 //    exer4();
-    exer5();
+//    exer5();
+//    exer6();
+//    exer7();
+    exer8();
+    
     
     
     cv::waitKey(0);

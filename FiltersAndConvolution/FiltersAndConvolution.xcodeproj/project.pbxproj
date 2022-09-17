@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4308FC2528D0942B00A4B3C7 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4308FC2428D0942B00A4B3C7 /* main.cpp */; };
+		4308FC2D28D5B6B000A4B3C7 /* ConnectedComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4308FC2B28D5B6B000A4B3C7 /* ConnectedComponent.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,8 @@
 /* Begin PBXFileReference section */
 		4308FC2128D0942A00A4B3C7 /* FiltersAndConvolution */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = FiltersAndConvolution; sourceTree = BUILT_PRODUCTS_DIR; };
 		4308FC2428D0942B00A4B3C7 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		4308FC2B28D5B6B000A4B3C7 /* ConnectedComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ConnectedComponent.cpp; sourceTree = "<group>"; };
+		4308FC2C28D5B6B000A4B3C7 /* ConnectedComponent.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ConnectedComponent.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +61,8 @@
 			isa = PBXGroup;
 			children = (
 				4308FC2428D0942B00A4B3C7 /* main.cpp */,
+				4308FC2B28D5B6B000A4B3C7 /* ConnectedComponent.cpp */,
+				4308FC2C28D5B6B000A4B3C7 /* ConnectedComponent.hpp */,
 			);
 			path = FiltersAndConvolution;
 			sourceTree = "<group>";
@@ -120,6 +125,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4308FC2528D0942B00A4B3C7 /* main.cpp in Sources */,
+				4308FC2D28D5B6B000A4B3C7 /* ConnectedComponent.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,6 +246,7 @@
 		4308FC2928D0942B00A4B3C7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C8N539AAFW;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -263,6 +270,7 @@
 		4308FC2A28D0942B00A4B3C7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C8N539AAFW;
 				ENABLE_HARDENED_RUNTIME = YES;
