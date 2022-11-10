@@ -257,6 +257,75 @@ void exer8() {
     imshow(exerWindow, largestConnectCompo);
 }
 
+void exer10() {
+//    cv::RNG rng(cv::getTickCount());
+//    cv::Mat img(800, 600, CV_8UC1);
+//    rng.fill(img, cv::RNG::NORMAL, 0, 6);
+//    cv::imshow(exerWindow, img);
+}
+
+void exer11() {
+    string fileName = "/Users/zsg/Desktop/luomin.jpeg";
+    cv::Mat colorImg = cv::imread(fileName);
+    cv::Mat tophatImg;
+    cv::morphologyEx(colorImg, tophatImg, cv::MORPH_TOPHAT, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3,3)));
+    // 11.1
+    cv::imshow(exerWindow, tophatImg);
+
+    cv::Mat grayImg;
+    cv::cvtColor(tophatImg, grayImg, cv::COLOR_BGR2GRAY);
+    
+    imshow(exerWindow, tophatImg);
+
+}
+
+void exer12() {
+    string fileName = "/Users/zsg/Desktop/平时学习.jpeg";
+    cv::Mat colorImg = cv::imread(fileName);
+    // resized image
+    cv::Mat reducedImg;
+    cv::resize(colorImg, reducedImg, colorImg.size()/2);
+    cv::resize(reducedImg, reducedImg, reducedImg.size()/2);
+    cv::resize(reducedImg, reducedImg, reducedImg.size()/2);
+    
+    //pyrDown
+    cv::Mat downImg;
+    cv::pyrDown(colorImg, downImg);
+    cv::pyrDown(downImg, downImg);
+    cv::pyrDown(downImg, downImg);
+
+    cv::Mat both = cv::Mat(reducedImg.rows, 2*reducedImg.cols, reducedImg.type());
+    reducedImg.copyTo(both.colRange(0, reducedImg.cols));
+    downImg.copyTo(both.colRange(reducedImg.cols, 2*reducedImg.cols));
+    
+    // the former is better because of data interpolation, the latter just downsampling.
+    imshow(exerWindow, both);
+
+}
+
+void exer13() {
+    string fileName = "/Users/zsg/Desktop/平时学习.jpeg";
+    cv::Mat colorImg = cv::imread(fileName);
+
+    cv::Mat thresholdImg;
+    // 13
+//    cv::threshold(colorImg, thresholdImg, 128, 255, cv::THRESH_BINARY);
+//    cv::threshold(colorImg, thresholdImg, 128, 255, cv::THRESH_BINARY_INV);
+//    cv::threshold(colorImg, thresholdImg, 128, 255, cv::THRESH_TRUNC);
+//    cv::threshold(colorImg, thresholdImg, 128, 255, cv::THRESH_TOZERO);
+//    cv::threshold(colorImg, thresholdImg, 128, 255, cv::THRESH_TOZERO_INV);
+    
+    // 13.a
+    cv::Mat grayImg;
+    cv::cvtColor(colorImg, grayImg, cv::COLOR_BGR2GRAY);
+//    cv::adaptiveThreshold(grayImg, thresholdImg, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 3, 5);
+//    cv::adaptiveThreshold(grayImg, thresholdImg, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY_INV, 3, 5);
+    cv::adaptiveThreshold(grayImg, thresholdImg, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 3, 0);
+//    cv::adaptiveThreshold(grayImg, thresholdImg, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 3, -5);
+
+    cv::imshow(exerWindow, thresholdImg);
+}
+
 void exer() {
 //    exer1();
 //    exer2();
@@ -264,8 +333,11 @@ void exer() {
 //    exer5();
 //    exer6();
 //    exer7();
-    exer8();
-    
+//    exer8();
+//    exer10();
+//    exer11();
+//    exer12();
+    exer13();
     
     
     cv::waitKey(0);
