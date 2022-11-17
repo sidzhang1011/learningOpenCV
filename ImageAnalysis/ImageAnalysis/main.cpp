@@ -24,6 +24,14 @@ void grab_cut();
 void exer01();
 void exer02();
 void exer04();
+void exer05();
+void exer08();
+void exer09();
+void exer10();
+void exer11();
+void exer12();
+
+void dft_color(cv::Mat srcImg, cv::Mat filter, cv::Mat& dstImg);
 
 int main(int argc, const char * argv[]) {
 //    fourier();
@@ -31,8 +39,14 @@ int main(int argc, const char * argv[]) {
 //    grab_cut();
 //    exer01();
 //    exer02();
-    exer04();
-    
+//    exer04();
+//    exer05();
+//    exer08();
+    exer09();
+    exer10();
+    exer11();
+    exer12();
+
     return 0;
 }
 
@@ -298,7 +312,209 @@ void exer04() {
         cv::imshow(winName, result1);
         
         cv::waitKey();
-
     }
     
+}
+
+float getRectSum(cv::Mat igrMat, int x, int y, int width, int height) {
+    float sum = igrMat.at<float>(y+height, x+width) - igrMat.at<float>(y+height, x) - igrMat.at<float>(y, x+width) + igrMat.at<float>(y, x);
+    return sum;
+}
+
+void fillHorzLine(cv::Mat src, cv::Vec4s &line, int x, int y, int width) {
+    while(x > 0 && src.at<uint8_t>(y, x) == 255) {
+        --x;
+    }
+    int end = x + width;
+    while(end < src.cols - 1 && src.at<uint8_t>(y, end) == 255) {
+        ++end;
+    }
+    line[0] = x;
+    line[1] = y;
+    line[2] = end;
+    line[3] = y;
+}
+
+void exer05() {
+    string imageFileName = "/Users/zsg/Desktop/lines.png";
+    cv::Mat srcImg = cv::imread(imageFileName, cv::IMREAD_GRAYSCALE);
+    srcImg = 255 - srcImg;
+//    cv::Mat edges;
+//    cv::Canny(srcImg, edges, 20, 10);
+    cv::threshold(srcImg, srcImg, 50, 255, cv::THRESH_BINARY);
+    
+    float reachFence = 0.8;         // continuous extent of edge
+    float minEdgePoints = 100;       // minimum number of edget points
+//    float minEdgetLenScale = 0.1;   // minimum edge length scale to image dimension
+    cv::Mat igrMat;
+    vector<cv::Vec4s> foundEdges;
+    cv::integral(srcImg, igrMat, CV_32FC1);
+    float sumFence = 255 * minEdgePoints * reachFence;
+    
+    // only for horizontal edge, vertical edge is similar
+    int x = 0, y= 0;
+    int count = 0;
+    while (y < srcImg.rows) {
+        float cmpFence = sumFence;
+        while(x < srcImg.cols) {
+            float sum_line = getRectSum(igrMat, x, y, minEdgePoints, 1);
+            if (sum_line > 10) {
+                cout << count << ": (" << x << ","<<y << ") " << sum_line << " " << endl;
+                ++ count;
+            }
+            if (sum_line >= sumFence) {
+                cv::Vec4s line;
+                if (y == srcImg.rows - 1 || y == 0) {
+                    fillHorzLine(srcImg, line, x, y, minEdgePoints);
+                    foundEdges.push_back(line);
+                    x = line[2] + 1;
+                    cmpFence = sumFence;
+                } else {
+                    float sum_prev = getRectSum(igrMat, x, y-1, minEdgePoints, 1);
+                    float sum_next = getRectSum(igrMat, x, y+1, minEdgePoints, 1);
+                    if (sum_next < 0.2*sumFence || sum_prev < 0.2 *sumFence) {
+                        fillHorzLine(srcImg, line, x, y, minEdgePoints);
+                        foundEdges.push_back(line);
+                        x = line[2] + 1;
+                        cmpFence = sumFence;
+                    } else {
+                        cmpFence = sumFence;
+                        x += int(cmpFence)/255;
+                    }
+                }
+            } else {
+                cmpFence = sumFence - sum_line;
+                x += int(cmpFence)/255;
+            }
+        }
+        ++y;
+        x = 0;
+    }
+    
+    cv::cvtColor(srcImg, srcImg, cv::COLOR_GRAY2BGR);
+    for (int i = 0; i < foundEdges.size(); ++i) {
+        cv::Vec4s line = foundEdges[i];
+        cv::line(srcImg, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(0,0,255), 2);
+    }
+    
+    string winName = "result";
+    cv::namedWindow(winName, cv::WINDOW_AUTOSIZE);
+    cv::imshow(winName, srcImg);
+
+    cv::waitKey();
+}
+
+void exer06() {
+    // rotate 45 degree, then find horizontal lines
+}
+
+void exer07() {
+    // subtract and mask
+}
+
+void exer08() {
+    string imageFileName = "/Users/zsg/Desktop/bicycle.jpeg";
+    cv::Mat srcImg = cv::imread(imageFileName, cv::IMREAD_COLOR);
+    
+    string winName = "original";
+    cv::namedWindow(winName, cv::WINDOW_AUTOSIZE);
+    cv::imshow(winName, srcImg);
+
+    
+    cv::Mat result1;
+    int64 gbTicks = cv::getTickCount();
+    cv::GaussianBlur(srcImg, result1, cv::Size(51,51), 0);
+    gbTicks = cv::getTickCount() - gbTicks;
+    float gbSec = gbTicks/1000000000.0;
+    cout << "direct gaussBlur seconds(51x51): " << gbSec << endl;
+    string winName1 = "gaussBlur";
+    cv::namedWindow(winName1, cv::WINDOW_AUTOSIZE);
+    cv::imshow(winName1, result1);
+
+    
+    cv::Mat result2;
+    cv::Mat k1 = cv::getGaussianKernel(51, 0);
+    cv::Mat k2 = cv::getGaussianKernel(51, 0);
+    cv::Mat kernel = k1 * k2.t();
+    int64 dft_ticks = cv::getTickCount();
+    dft_color(srcImg, kernel, result2);
+    dft_ticks = cv::getTickCount() - dft_ticks;
+    double dftSecs = dft_ticks/1000000000.0;
+    cout << "dft gaussBlur seconds(51x51): " << dftSecs << endl;
+    string winName2 = "dft Blur";
+    cv::namedWindow(winName2, cv::WINDOW_AUTOSIZE);
+    cv::imshow(winName2, result2);
+    
+    cv::waitKey();
+
+}
+
+void dft_color(cv::Mat srcImg, cv::Mat filter, cv::Mat& dstImg) {
+    int dft_M = srcImg.rows + filter.rows - 1;
+    int dft_N = srcImg.cols + filter.cols - 1;
+        
+    cv::Mat filter_dft = cv::Mat::zeros(dft_M, dft_N, CV_32F);
+    cv::Mat result_dft_part = filter_dft(cv::Rect(0, 0, filter.cols, filter.rows));
+    filter.convertTo(result_dft_part, filter_dft.type());
+    cv::dft(filter_dft, filter_dft);
+    vector<cv::Mat> imgFreqs;
+    
+    vector<cv::Mat> imgParts;
+    cv::split(srcImg, imgParts);
+    for (size_t i=0; i<imgParts.size(); ++i) {
+        cv::Mat imgTemp = cv::Mat::zeros(dft_M, dft_N, CV_32F);
+        cv::Mat imgTemp_part = imgTemp(cv::Rect(0, 0, srcImg.cols, srcImg.rows));
+        imgParts[i].convertTo(imgTemp_part, imgTemp.type());
+        cv::dft(imgTemp, imgTemp);
+        imgFreqs.push_back(imgTemp);
+    }
+    
+    vector<cv::Mat> freqMuls;
+    for (size_t i=0; i<imgFreqs.size(); ++i) {
+        cv::Mat mulTemp;
+        cv::mulSpectrums(imgFreqs[i], filter_dft, mulTemp, 0);
+        cv::idft(mulTemp, mulTemp, cv::DFT_SCALE);
+        cv::Mat mulTemp_part = mulTemp(cv::Rect( (filter.cols-1)/2, (filter.rows-1)/2, srcImg.cols, srcImg.rows));
+        freqMuls.push_back(mulTemp_part);
+//        freqMuls.push_back(mulTemp);
+    }
+    
+    cv::merge(freqMuls, dstImg);
+    cv::normalize(dstImg, dstImg, 0, 1, cv::NORM_MINMAX, dstImg.type());
+
+}
+
+void exer09() {
+    src_img = cv::imread("/Users/zsg/Desktop/刘涛.jpeg");
+    cv::namedWindow(win1, cv::WINDOW_AUTOSIZE);
+    cv::imshow(win1, src_img);
+    cv::setMouseCallback(win1, onMouse);
+    
+    cv::Mat fgModel, bgModel;
+    while(1 ){
+        char c = cv::waitKey(0);
+        if (c == 'o') {
+            dst_img = cv::Mat::zeros(src_img.size(), CV_8UC1);
+            cv::grabCut(src_img, dst_img, fgRect, bgModel, fgModel, 1, cv::GC_INIT_WITH_RECT);
+            cv::compare(dst_img, cv::GC_PR_FGD, dst_img, cv::CMP_NE);
+            
+            cv::Mat fg = cv::Mat(src_img.size(), CV_8UC3, cv::Scalar(0,0,0));
+            src_img.copyTo(fg, dst_img);
+            cv::imshow(win1, fg);
+            fg.copyTo(src_img);
+        } else if ( c == 27) {
+            break;
+        }
+    }
+    cv::waitKey();
+    cv::destroyWindow(win1);
+}
+
+void exer10() {
+}
+
+void exer11() {
+}
+
+void exer12() {
 }
