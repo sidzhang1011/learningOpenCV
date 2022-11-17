@@ -485,7 +485,7 @@ void dft_color(cv::Mat srcImg, cv::Mat filter, cv::Mat& dstImg) {
 }
 
 void exer09() {
-    src_img = cv::imread("/Users/zsg/Desktop/刘涛.jpeg");
+    src_img = cv::imread("/Users/zsg/Desktop/IMG_0076.JPG");
     cv::namedWindow(win1, cv::WINDOW_AUTOSIZE);
     cv::imshow(win1, src_img);
     cv::setMouseCallback(win1, onMouse);
@@ -496,10 +496,13 @@ void exer09() {
         if (c == 'o') {
             dst_img = cv::Mat::zeros(src_img.size(), CV_8UC1);
             cv::grabCut(src_img, dst_img, fgRect, bgModel, fgModel, 1, cv::GC_INIT_WITH_RECT);
+            cv::Mat pfg;
+            cv::compare(dst_img, cv::GC_PR_FGD, pfg, cv::CMP_EQ);
             cv::compare(dst_img, cv::GC_PR_FGD, dst_img, cv::CMP_NE);
             
             cv::Mat fg = cv::Mat(src_img.size(), CV_8UC3, cv::Scalar(0,0,0));
             src_img.copyTo(fg, dst_img);
+            cv::inpaint(fg, pfg, fg, 20, cv::INPAINT_NS);
             cv::imshow(win1, fg);
             fg.copyTo(src_img);
         } else if ( c == 27) {
