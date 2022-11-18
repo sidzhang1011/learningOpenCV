@@ -42,7 +42,7 @@ int main(int argc, const char * argv[]) {
 //    exer04();
 //    exer05();
 //    exer08();
-    exer09();
+//    exer09();
     exer10();
     exer11();
     exer12();
@@ -514,6 +514,40 @@ void exer09() {
 }
 
 void exer10() {
+    cv::Mat srcImg = cv::imread("/Users/zsg/Desktop/flower.png");
+    
+    string winname = "original";
+    cv::namedWindow(winname, cv::WINDOW_AUTOSIZE);
+    cv::imshow(winname, srcImg);
+
+    cv::Mat dstImg = srcImg;
+    int spatialRad = 50;    // spatial radius
+    int colorRad = 60;      // color radius
+    int maxPyrLevel = 2;    // pyramid level
+    cv::pyrMeanShiftFiltering(srcImg, dstImg, spatialRad, colorRad, maxPyrLevel);
+    string winname1 = "pyrMeanShiftFiltered";
+    cv::namedWindow(winname1, cv::WINDOW_AUTOSIZE);
+    cv::imshow(winname1, dstImg);
+    cv::moveWindow(winname1, 400, 0);
+
+    cv::RNG rng = cv::theRNG();
+    cv::Mat mask(dstImg.rows+2, dstImg.cols+2, CV_8UC1, cv::Scalar::all(0));
+    for (int y=0; y < dstImg.rows; y++) {
+        for (int x=0; x < dstImg.cols; x++) {
+            if (mask.at<uchar>(y+1, x+1) == 0)  // unprocessed
+            {
+                cv::Scalar newVal( rng(255), rng(256), rng(256) );
+                cv::floodFill(dstImg, mask, cv::Point(x, y), newVal, 0, cv::Scalar::all(5), cv::Scalar::all(5) );
+            }
+        }
+    }    
+    string winname2 = "floodFilled";
+    cv::namedWindow(winname2, cv::WINDOW_AUTOSIZE);
+    cv::imshow(winname2, dstImg);
+    cv::moveWindow(winname2, 800, 0);
+
+    cv::waitKey();
+    
 }
 
 void exer11() {
