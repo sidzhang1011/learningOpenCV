@@ -6,9 +6,15 @@
 //
 
 #include <iostream>
+#include <algorithm>
+#include <random>
+#include <functional>
+#include <memory>
+#include <string>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
 using namespace std;
 
@@ -27,11 +33,15 @@ void example1();
 void thresh_callback1(int, void* );
 void example2();
 void example3();
+void exercise04();
+void exercise05();
 
 int main(int argc, const char * argv[]) {
 //    example1();
 //    example2();
-    example3();
+//    example3();
+//    exercise04();
+    exercise05();
     return 0;
 }
 
@@ -143,4 +153,107 @@ void example3() {
     cv::imshow("Labeled map", img_color);
   //*/
     cv::waitKey();
+}
+
+static vector<cv::Point> sampleContour( const cv::Mat& image, int n=300) {
+    vector<vector<cv::Point>> _contours;
+    vector<cv::Point> all_points;
+    cv::findContours(image, _contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
+    for (size_t i=0; i < _contours.size(); i++) {
+        for (size_t j=0; j < _contours[i].size(); j++) {
+            all_points.push_back( _contours[i][j]);
+        }
+    }
+    
+    // If too little points, replicate them
+    //
+    int dummy = 0;
+    for (int add=(int)all_points.size(); add<n; add++) {
+        all_points.push_back(all_points[dummy++]);
+    }
+    
+    // Sample uniformly
+//    unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+//    shuffle(all_points.begin(), all_points.end(), default_random_engine(seed));
+    random_device rd;
+    mt19937 g(rd());
+    shuffle(all_points.begin(), all_points.end(), g);
+    
+    vector<cv::Point> sampled;
+    for (int i=0; i<n; i++) {
+        sampled.push_back(all_points[i]);
+    }
+    return sampled;
+}
+
+void example04() {
+    string path = "../data/shape_sample/";
+    int indexQuery = 1;
+//    shared_ptr<cv::ShapeContextDistanceExtractor> mysc = cv::createShape
+    
+}
+
+double crossProduct(cv::Point2d p1, cv::Point2d p2, cv::Point2d p3) {
+    return (p3.x- p1.x)*(p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x);
+}
+
+bool isInside(cv::Point2d p1, cv::Point2d p2, cv::Point2d p3, cv::Point2d p) {
+    // if p1, p2, p3 is not counterclockwise, exchange p2&p3
+    if (crossProduct(p1, p2, p3) < 0) {
+        cv::Point2d tempP(p2);
+        p2 = p3;
+        p3 = tempP;
+    }
+    if(crossProduct(p1, p, p2) >= 0) return false;
+    if(crossProduct(p2, p, p3) >= 0) return false;
+    if(crossProduct(p3, p, p1) >= 0) return false;
+
+    return true;
+}
+
+void exercise04() {
+    cv::Point2d p1(2,1), p2(1, 1), p3(1, 2), p(1.2, 1.5);
+    if (isInside(p1, p2, p3, p)) {
+        cout << "inside\n";
+    } else {
+        cout << "outSide\n";
+    }
+}
+
+void exercise05() {
+    cv::Mat src = cv::Mat::zeros(80, 80, CV_8UC3);
+    cv::ellipse(src, cv::Point(40,40), cv::Size(20,20), 0, 0, 360, cv::Scalar(255,255,255), 1);
+    cv::Mat img;
+    cv::cvtColor(src, img, cv::COLOR_BGR2GRAY);
+    cout << src.channels() <<endl;
+    cout << img.channels() << endl;
+    cout << img.type() <<endl;
+//    cout << img <<endl;
+    cv::threshold(img, img, 100, 255, cv::THRESH_BINARY);
+    vector<vector<cv::Point>> _contours;
+    cv::findContours(img, _contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
+    double contourLen;
+    for (int i = 0; i <_contours.size(); ++i) {
+          double area = cv::contourArea(_contours[i]);
+          double length = cv::arcLength(_contours[i], true);
+          cout <<"area: " <<area <<" " <<"length: " <<length <<endl;
+          contourLen = length;
+      }
+    cout << contourLen << endl; // 131.882 > 125.7
+    
+    double epsilonRates[] = {0.9, 0.66, 0.33, 0.1, 0.05, 0.01};
+    int count = sizeof(epsilonRates)/sizeof(double);
+    vector<vector<cv::Point>> contourPloy(count);
+    for(int i = 0; i< count; i++) {
+        cv::Mat dstImg(img.size(), CV_8UC3, cv::Scalar::all(0));
+        cv::approxPolyDP(_contours[1], contourPloy[i], epsilonRates[i] * 125.7, true);
+        cv::drawContours(dstImg, contourPloy, i, cv::Scalar(0, 255, 255));
+        string winName = "poly";
+        winName.append(to_string(i));
+        cv::imshow(winName, dstImg);
+    }
+    
+    cv::waitKey();
+    
+    
 }
