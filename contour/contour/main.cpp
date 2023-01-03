@@ -35,13 +35,15 @@ void example2();
 void example3();
 void exercise04();
 void exercise05();
+void exercise08();
 
 int main(int argc, const char * argv[]) {
 //    example1();
 //    example2();
 //    example3();
 //    exercise04();
-    exercise05();
+//    exercise05();
+    exercise08();
     return 0;
 }
 
@@ -256,4 +258,45 @@ void exercise05() {
     cv::waitKey();
     
     
+}
+
+void exercise08() {
+    cv::Mat img = cv::imread("/Users/zsg/Documents/images/letterA_tilted.tif", cv::IMREAD_GRAYSCALE);
+    double hu[7];
+    cv::Moments mo = cv::moments(img);
+    cv::HuMoments(mo, hu);
+    for(int i=0; i<7; i++) {
+        cout << hu[i] << ",";
+    }
+    cout << endl;
+    
+    // rotate 90
+    cv::Mat img_rot90;
+    cv::rotate(img, img_rot90, cv::ROTATE_90_CLOCKWISE);
+    mo = cv::moments(img_rot90);
+    cv::HuMoments(mo, hu);
+    for(int i=0; i<7; i++) {
+        cout << hu[i] << ",";
+    }
+    cout << endl;
+
+    // scale 2 times
+    cv::Mat img_scale2;
+    cv::pyrUp(img, img_scale2);
+    mo = cv::moments(img_scale2);
+    cv::HuMoments(mo, hu);
+    for(int i=0; i<7; i++) {
+        cout << hu[i] << ",";
+    }
+    cout << endl;
+
+    // rotate 90 and scale 2 times
+    cv::Mat img_rs;
+    cv::pyrUp(img_rot90, img_rs);
+    mo = cv::moments(img_rs);
+    cv::HuMoments(mo, hu);
+    for(int i=0; i<7; i++) {
+        cout << hu[i] << ",";
+    }
+    cout << endl;
 }
