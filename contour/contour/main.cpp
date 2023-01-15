@@ -262,31 +262,35 @@ void exercise05() {
 
 void exercise08() {
     cv::Mat img = cv::imread("/Users/zsg/Documents/images/letterA_tilted.tif", cv::IMREAD_GRAYSCALE);
+    double hu_original[7];
     double hu[7];
     cv::Moments mo = cv::moments(img);
-    cv::HuMoments(mo, hu);
+    cv::HuMoments(mo, hu_original);
     for(int i=0; i<7; i++) {
-        cout << hu[i] << ",";
+        cout << hu_original[i] << ",";
     }
     cout << endl;
     
+    cout << endl << "deviation rate:" << endl<<endl;
+
     // rotate 90
     cv::Mat img_rot90;
     cv::rotate(img, img_rot90, cv::ROTATE_90_CLOCKWISE);
     mo = cv::moments(img_rot90);
     cv::HuMoments(mo, hu);
     for(int i=0; i<7; i++) {
-        cout << hu[i] << ",";
+        printf("%.4f, ", (hu[i] - hu_original[i])/hu_original[i]);
     }
     cout << endl;
-
+    
     // scale 2 times
     cv::Mat img_scale2;
     cv::pyrUp(img, img_scale2);
     mo = cv::moments(img_scale2);
     cv::HuMoments(mo, hu);
     for(int i=0; i<7; i++) {
-        cout << hu[i] << ",";
+//        cout << (hu[i] - hu_original[i])/hu_original[i] << ",";
+        printf("%.4f, ", (hu[i] - hu_original[i])/hu_original[i]);
     }
     cout << endl;
 
@@ -296,7 +300,7 @@ void exercise08() {
     mo = cv::moments(img_rs);
     cv::HuMoments(mo, hu);
     for(int i=0; i<7; i++) {
-        cout << hu[i] << ",";
+        printf("%.4f, ", (hu[i] - hu_original[i])/hu_original[i]);
     }
     cout << endl;
 }
